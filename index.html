@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crowley ISD • Generative Prompting</title>
+  <!-- Tailwind 2.2 (works in GitHub Pages and Apps Script) -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Simple, reliable 16:9 iframe wrapper (no Tailwind plugin needed) */
+    .ratio { position: relative; width: 100%; padding-top: 56.25%; }
+    .ratio iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- HERO -->
+  <section class="bg-gradient-to-br from-indigo-600 via-pink-600 to-green-500 text-white">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-bold leading-tight">Generative Prompting</h1>
+          <p class="mt-4 text-lg">Write clearer prompts. Get better results. Save time for what matters—students and learning.</p>
+        </div>
+        <div class="rounded-2xl overflow-hidden shadow-2xl">
+          <div class="ratio">
+            <iframe
+              src="https://www.youtube.com/embed/NuIKQgX71Fc"
+              title="Prompt Engineering for Educators"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROMPT GENERATOR -->
+  <section class="max-w-7xl mx-auto px-6 py-12">
+    <h2 class="text-2xl font-semibold mb-4">Prompt Generator</h2>
+    <div class="grid lg:grid-cols-2 gap-8">
+      <!-- Builder -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <label class="block mb-2">Role
+          <input id="role" class="w-full border px-3 py-2" placeholder="e.g., You are an instructional coach">
+        </label>
+        <label class="block mb-2">Audience
+          <input id="audience" class="w-full border px-3 py-2" placeholder="e.g., 5th-grade teachers">
+        </label>
+        <label class="block mb-2">Task
+          <input id="task" class="w-full border px-3 py-2" placeholder="e.g., Create a lesson outline on fractions">
+        </label>
+        <label class="block mb-2">Context
+          <textarea id="context" class="w-full border px-3 py-2" rows="2" placeholder="Purpose, TEKS, timing, resources…"></textarea>
+        </label>
+        <label class="block mb-2">Tone
+          <input id="tone" class="w-full border px-3 py-2" placeholder="e.g., encouraging and concise">
+        </label>
+        <label class="block mb-2">Format
+          <input id="format" class="w-full border px-3 py-2" placeholder="e.g., bullets + table + script">
+        </label>
+        <label class="block mb-2">Constraints
+          <input id="constraints" class="w-full border px-3 py-2" placeholder="e.g., 400 words; 3 CFUs; include exit ticket">
+        </label>
+        <label class="block mb-2">Reading Level
+          <input id="reading" class="w-full border px-3 py-2" placeholder="e.g., 7th-grade readability">
+        </label>
+        <label class="block mb-2">Examples
+          <textarea id="examples" class="w-full border px-3 py-2" rows="2" placeholder="Paste exemplar/rubric snippet to emulate…"></textarea>
+        </label>
+        <label class="block mb-2">District Alignment
+          <input id="alignment" class="w-full border px-3 py-2" placeholder="e.g., Align to The Crowley Way & SIP goals">
+        </label>
+
+        <div class="flex gap-3 mt-4">
+          <button type="button" id="build" class="bg-indigo-600 text-white px-4 py-2 rounded">Build Prompt</button>
+          <button type="button" id="reset" class="bg-gray-200 px-4 py-2 rounded">Reset</button>
+        </div>
+      </div>
+
+      <!-- Output -->
+      <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-2">Assembled Prompt</h3>
+        <textarea id="output" class="w-full h-80 border p-3" spellcheck="false"></textarea>
+        <button type="button" id="copyBtn" class="mt-4 bg-gray-200 px-4 py-2 rounded">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="text-center text-xs text-gray-500 pb-8">
+    © Crowley ISD • Generative Prompting
+  </footer>
+
+  <script>
+    const fields = ["role","audience","task","context","tone","format","constraints","reading","examples","alignment"];
+    const get = id => document.getElementById(id).value.trim();
+    const set = (id, val) => document.getElementById(id).value = val;
+
+    function build(){
+      const data = Object.fromEntries(fields.map(f => [f, get(f)]));
+      const parts = [];
+      if (data.role) parts.push(data.role);
+      const taskLine = [data.task, data.audience].filter(Boolean).join(' ');
+      if (taskLine) parts.push(taskLine);
+      if (data.context) parts.push("Context: " + data.context);
+      if (data.tone) parts.push("Tone/Style: " + data.tone);
+      if (data.format) parts.push("Output format: " + data.format);
+      if (data.constraints) parts.push("Constraints: " + data.constraints);
+      if (data.reading) parts.push("Reading level: " + data.reading);
+      if (data.examples) parts.push("Examples to emulate: " + data.examples);
+      if (data.alignment) parts.push("District alignment: " + data.alignment);
+      document.getElementById('output').value = parts.join("\n\n") + "\n";
+    }
+
+    document.getElementById('build').addEventListener('click', build);
+
+    document.getElementById('reset').addEventListener('click', () => {
+      fields.forEach(f => set(f, ''));
+      document.getElementById('output').value = '';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(document.getElementById('output').value);
+      } catch(e) { /* ignore */ }
+    });
+  </script>
+</body>
+</html>
